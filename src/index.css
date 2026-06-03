@@ -1,20 +1,11 @@
-@import "tailwindcss";
+:root {
+  --color-brand-primary: #1e40af;
+  --color-brand-secondary: #0d9488;
+  --color-brand-accent: #f59e0b;
+  --color-dark-bg: #0f172a;
 
-@theme {
-  /* 1. Custom Color Palette */
-  --color-brand-primary: #1e40af;     /* Deep Royal Blue */
-  --color-brand-secondary: #0d9488;   /* Teal */
-  --color-brand-accent: #f59e0b;      /* Amber/Gold */
-  --color-dark-bg: #0f172a;           /* Dark Mode Background */
-
-  /* 2. Custom Fonts */
   --font-display: "Poppins", sans-serif;
   --font-body: "Inter", sans-serif;
-
-  /* 3. Custom Spacing / Layout Rules */
-}
-
-:root {
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
