@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { jsPDF } from 'jspdf/dist/jspdf.es.min.js'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf'
 import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import './Home.css'
@@ -11,6 +12,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageCount, setPageCount] = useState(0)
   const [pageImage, setPageImage] = useState<string | null>(null)
+  const [pageSizes, setPageSizes] = useState<Record<number, { width: number; height: number }>>({})
   const [loadingPage, setLoadingPage] = useState(false)
   const [showUploadOverlay, setShowUploadOverlay] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -22,6 +24,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [fontSizeInput, setFontSizeInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
+  const [exporting, setExporting] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [historyStack, setHistoryStack] = useState<Record<number, Array<{ id: string; x: number; y: number; text: string; fontSize: number; bold: boolean }>>[]>([])
@@ -98,6 +101,10 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
           throw new Error('Unable to get canvas rendering context')
         }
 
+        setPageSizes((prev) => ({
+          ...prev,
+          [currentPage]: { width: viewport.width, height: viewport.height },
+        }))
         return page.render({ canvasContext: context, viewport }).promise
       })
       .then(() => {
@@ -214,6 +221,75 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
       setSelectedTextId(null)
       setEditingText('')
       setFontSizeDropdownOpen(false)
+    }
+  }
+
+  const renderTextOverlayOnCanvas = (
+    context: CanvasRenderingContext2D,
+    texts: Array<{ id: string; x: number; y: number; text: string; fontSize: number; bold: boolean }>
+  ) => {
+    context.fillStyle = '#000000'
+    context.textBaseline = 'top'
+    texts.forEach((textItem) => {
+      context.font = `${textItem.bold ? 'bold ' : ''}${textItem.fontSize}px Arial`
+      const lines = textItem.text.split('\n')
+      lines.forEach((line, index) => {
+        context.fillText(line, textItem.x, textItem.y + index * textItem.fontSize * 1.2)
+      })
+    })
+  }
+
+  const getCurrentPageDisplayScale = () => {
+    const pageSize = pageSizes[currentPage]
+    const sheet = documentSheetRef.current
+    if (!pageSize || !sheet) return 1
+    const rect = sheet.getBoundingClientRect()
+    return rect.width > 0 ? rect.width / pageSize.width : 1
+  }
+
+  const handleDone = async () => {
+    if (!pdfDocRef.current || !pageCount) return
+
+    setExporting(true)
+    try {
+      const pageScale = getScaleForPageCount(pageCount)
+      let pdf: any | null = null
+
+      for (let pageNum = 1; pageNum <= pageCount; pageNum += 1) {
+        const page = await pdfDocRef.current.getPage(pageNum)
+        const viewport = page.getViewport({ scale: pageScale })
+        const canvas = document.createElement('canvas')
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        const context = canvas.getContext('2d')
+
+        if (!context) {
+          throw new Error('Unable to get canvas context for PDF export')
+        }
+
+        await page.render({ canvasContext: context, viewport }).promise
+        const texts = pageTexts[pageNum] || []
+        renderTextOverlayOnCanvas(context, texts)
+
+        const imageData = canvas.toDataURL('image/png')
+        if (!pdf) {
+          pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] })
+        } else {
+          pdf.addPage([canvas.width, canvas.height])
+          pdf.setPage(pageNum)
+        }
+
+        pdf.addImage(imageData, 'PNG', 0, 0, canvas.width, canvas.height)
+      }
+
+      if (pdf) {
+        pdf.save('edited.pdf')
+      }
+    } catch (error) {
+      console.error('PDF export failed:', error)
+      alert('Unable to export PDF. Please try again.')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -336,8 +412,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     if (!isTextMode || !documentSheetRef.current) return
 
     const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const displayScale = getCurrentPageDisplayScale()
+    const x = (e.clientX - rect.left) / displayScale
+    const y = (e.clientY - rect.top) / displayScale
 
     const currentTexts = getCurrentPageTexts()
 
@@ -393,11 +470,12 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     const element = currentTexts.find((el) => el.id === elementId)
     if (!element) return
 
+    const displayScale = getCurrentPageDisplayScale()
     setSelectedTextId(elementId)
     setDraggingId(elementId)
     setDragOffset({
-      x: e.clientX - rect.left - element.x,
-      y: e.clientY - rect.top - element.y,
+      x: e.clientX - rect.left - element.x * displayScale,
+      y: e.clientY - rect.top - element.y * displayScale,
     })
   }
 
@@ -405,8 +483,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     if (!draggingId || !documentSheetRef.current) return
 
     const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left - dragOffset.x
-    const y = e.clientY - rect.top - dragOffset.y
+    const displayScale = getCurrentPageDisplayScale()
+    const x = (e.clientX - rect.left - dragOffset.x) / displayScale
+    const y = (e.clientY - rect.top - dragOffset.y) / displayScale
 
     const currentTexts = getCurrentPageTexts()
     setCurrentPageTexts(
@@ -444,7 +523,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
             <div className="toolbar-actions">
               <button className="toolbar-button" onClick={handleUploadClick}>Upload New</button>
               <button className="toolbar-button">Convert</button>
-              <button className="toolbar-button editor-done">DONE</button>
+              <button className="toolbar-button editor-done" onClick={handleDone} disabled={exporting}>
+                {exporting ? 'Exporting...' : 'DONE'}
+              </button>
             </div>
           </header>
         </div>
@@ -568,9 +649,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             key={el.id}
                             className={`text-element ${editingId === el.id ? 'editing' : ''} ${selectedTextId === el.id ? 'selected' : ''}`}
                             style={{ 
-                              left: `${el.x}px`, 
-                              top: `${el.y}px`,
-                              fontSize: `${el.fontSize}px`,
+                              left: `${el.x * getCurrentPageDisplayScale()}px`, 
+                              top: `${el.y * getCurrentPageDisplayScale()}px`,
+                              fontSize: `${el.fontSize * getCurrentPageDisplayScale()}px`,
                               fontWeight: el.bold ? 700 : 400,
                               cursor: isSelectionMode && editingId !== el.id ? 'grab' : 'text'
                             }}
@@ -597,8 +678,8 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             onBlur={handleTextBlur}
                             onKeyDown={handleTextKeyDown}
                             style={{
-                              left: `${getCurrentPageTexts().find((el) => el.id === editingId)?.x}px`,
-                              top: `${getCurrentPageTexts().find((el) => el.id === editingId)?.y}px`,
+                              left: `${getCurrentPageTexts().find((el) => el.id === editingId)?.x! * getCurrentPageDisplayScale()}px`,
+                              top: `${getCurrentPageTexts().find((el) => el.id === editingId)?.y! * getCurrentPageDisplayScale()}px`,
                             }}
                           />
                         )}
