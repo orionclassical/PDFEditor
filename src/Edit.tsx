@@ -148,12 +148,10 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         <div className="editor-main">
           <aside className="editor-sidebar">
             <button className="sidebar-button active">Selection</button>
-            <button className="sidebar-button">Edit PDF</button>
             <button className="sidebar-button">Sign</button>
             <button className="sidebar-button">Text</button>
             <button className="sidebar-button">Erase</button>
             <button className="sidebar-button">Highlight</button>
-            <button className="sidebar-button">Redact</button>
           </aside>
 
           <section className="document-panel">
