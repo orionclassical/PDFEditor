@@ -32,6 +32,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         pdfDocRef.current = doc
         setPageCount(doc.numPages)
         setCurrentPage(1)
+        setLoadingPage(false)
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -167,7 +168,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
             <div className="document-preview">
               <div className="document-sheet">
                 {loadingPage ? (
-                  <div className="pdf-loading">Rendering PDF page...</div>
+                  <div className="pdf-loading">
+                    <div className="pdf-spinner"></div>
+                  </div>
                 ) : pageImage ? (
                   <img src={pageImage} alt={`Page ${currentPage}`} className="pdf-image" />
                 ) : (
