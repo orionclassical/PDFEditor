@@ -25,6 +25,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [selectedPageSize, setSelectedPageSize] = useState<'a4' | '8x11' | '8x13' | '8x14'>('8x11')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [historyStack, setHistoryStack] = useState<Record<number, Array<{ id: string; x: number; y: number; text: string; fontSize: number; bold: boolean }>>[]>([])
@@ -247,12 +248,23 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     return rect.width > 0 ? rect.width / pageSize.width : 1
   }
 
+  const getPageSizeDimensions = (size: 'a4' | '8x11' | '8x13' | '8x14'): [number, number] => {
+    const sizes: Record<'a4' | '8x11' | '8x13' | '8x14', [number, number]> = {
+      a4: [210, 297], // mm
+      '8x11': [203.2, 279.4], // 8x11 inches in mm
+      '8x13': [203.2, 330.2], // 8x13 inches in mm
+      '8x14': [203.2, 355.6], // 8x14 inches in mm
+    }
+    return sizes[size]
+  }
+
   const handleDone = async () => {
     if (!pdfDocRef.current || !pageCount) return
 
     setExporting(true)
     try {
       const pageScale = getScaleForPageCount(pageCount)
+      const [pdfWidth, pdfHeight] = getPageSizeDimensions(selectedPageSize)
       let pdf: any | null = null
 
       for (let pageNum = 1; pageNum <= pageCount; pageNum += 1) {
@@ -268,18 +280,21 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         }
 
         await page.render({ canvasContext: context, viewport }).promise
+        
+        // Render text at canvas pixel coordinates (no scaling)
+        // jsPDF will scale everything proportionally when adding to page
         const texts = pageTexts[pageNum] || []
         renderTextOverlayOnCanvas(context, texts)
 
         const imageData = canvas.toDataURL('image/png')
         if (!pdf) {
-          pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] })
+          pdf = new jsPDF({ unit: 'mm', format: [pdfWidth, pdfHeight] })
         } else {
-          pdf.addPage([canvas.width, canvas.height])
-          pdf.setPage(pageNum)
+          pdf.addPage([pdfWidth, pdfHeight])
         }
 
-        pdf.addImage(imageData, 'PNG', 0, 0, canvas.width, canvas.height)
+        // Add full canvas as image at page dimensions - everything scales proportionally
+        pdf.addImage(imageData, 'PNG', 0, 0, pdfWidth, pdfHeight)
       }
 
       if (pdf) {
@@ -523,6 +538,16 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
             <div className="toolbar-actions">
               <button className="toolbar-button" onClick={handleUploadClick}>Upload New</button>
               <button className="toolbar-button">Convert</button>
+              <select
+                value={selectedPageSize}
+                onChange={(e) => setSelectedPageSize(e.target.value as any)}
+                className="toolbar-button page-size-select"
+              >
+                <option value="a4">A4</option>
+                <option value="8x11">8x11"</option>
+                <option value="8x13">8x13"</option>
+                <option value="8x14">8x14"</option>
+              </select>
               <button className="toolbar-button editor-done" onClick={handleDone} disabled={exporting}>
                 {exporting ? 'Exporting...' : 'DONE'}
               </button>
