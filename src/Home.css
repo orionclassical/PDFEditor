@@ -76,6 +76,14 @@ body {
   background: rgba(255, 255, 255, 0.02);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.upload-card:hover,
+.upload-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(228, 84, 84, 0.9);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .upload-card span {
@@ -84,6 +92,290 @@ body {
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.14em;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-label {
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1rem;
+  font-family: 'Homenaje', serif;
+}
+
+.file-label--hint {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 20;
+}
+
+.loading-card {
+  width: min(92vw, 460px);
+  padding: 28px 26px;
+  border-radius: 24px;
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  text-align: left;
+}
+
+.loading-title {
+  margin: 0 0 18px;
+  color: #ffffff;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6a6a, #e45454);
+  transition: width 0.18s ease;
+}
+
+.progress-value {
+  display: inline-block;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+.editor-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  background: #191919;
+  box-sizing: border-box;
+}
+
+.editor-shell {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.editor-header-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.editor-logo {
+  width: 36px;
+  height: auto;
+}
+
+.editor-brand {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbar-button {
+  border: none;
+  border-radius: 14px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.toolbar-button:hover {
+  background: rgba(228, 84, 84, 0.95);
+  transform: translateY(-1px);
+}
+
+.editor-done {
+  background: #e45454;
+}
+
+.editor-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.meta-label {
+  margin: 0 0 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.95rem;
+}
+
+.meta-value {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.editor-main {
+  display: grid;
+  grid-template-row: 180px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.editor-sidebar {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+.sidebar-button {
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.sidebar-button.active {
+  background: rgba(228, 84, 84, 0.18);
+  color: #e45454;
+}
+
+.document-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+}
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.document-title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.document-pages {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+}
+
+.document-preview {
+  min-height: 520px;
+  background: #111111;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-sheet {
+  width: 100%;
+  max-width: 780px;
+  min-height: 460px;
+  background: #f7f7f7;
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.doc-page-label {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.95rem;
+}
+
+.back-home {
+  align-self: flex-start;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(228, 84, 84, 0.95);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+@media (max-width: 960px) {
+  .editor-main {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 720px) {
+  .editor-shell {
+    padding: 0;
+  }
+
+  .editor-toolbar,
+  .editor-meta,
+  .editor-sidebar,
+  .document-panel {
+    padding: 16px;
+  }
 }
 
 .upload-card:focus-visible {
