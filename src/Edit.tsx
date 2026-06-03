@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf'
 import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import './Home.css'
+import './UploadOverlay.css'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -10,6 +11,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [pageCount, setPageCount] = useState(0)
   const [pageImage, setPageImage] = useState<string | null>(null)
   const [loadingPage, setLoadingPage] = useState(false)
+  const [showUploadOverlay, setShowUploadOverlay] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfDocRef = useRef<any | null>(null)
 
   useEffect(() => {
@@ -117,6 +121,48 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     return 0.65
   }
 
+  const handleUploadClick = () => {
+    setShowUploadOverlay(true)
+  }
+
+  const handleCloseOverlay = () => {
+    setShowUploadOverlay(false)
+    setSelectedFile(null)
+  }
+
+  const handleFileSelect = (newFile: File) => {
+    if (newFile.type === 'application/pdf') {
+      setSelectedFile(newFile)
+    } else {
+      alert('Please select a PDF file')
+    }
+  }
+
+  const handleDropzone = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const files = e.dataTransfer.files
+    if (files && files[0]) {
+      handleFileSelect(files[0])
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files
+    if (files && files[0]) {
+      handleFileSelect(files[0])
+    }
+  }
+
+  const handleUploadSubmit = () => {
+    if (selectedFile) {
+      setShowUploadOverlay(false)
+      setSelectedFile(null)
+      // The file would be passed to parent or handled here
+      // For now, just close the overlay
+    }
+  }
+
   return (
     <div className="editor-page">
       <div className="editor-shell">
@@ -139,7 +185,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
             </div>
 
             <div className="toolbar-actions">
-              <button className="toolbar-button">Upload New</button>
+              <button className="toolbar-button" onClick={handleUploadClick}>Upload New</button>
               <button className="toolbar-button">Convert</button>
               <button className="toolbar-button editor-done">DONE</button>
             </div>
@@ -182,6 +228,72 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
           </section>
         </div>
       </div>
+
+      {showUploadOverlay && (
+        <div className="upload-overlay">
+          <div className="upload-overlay-content">
+            <div className="upload-overlay-header">
+              <h2 className="upload-overlay-title">Upload New PDF</h2>
+              <button className="upload-overlay-close" onClick={handleCloseOverlay}>
+                ✕
+              </button>
+            </div>
+
+            {!selectedFile ? (
+              <div
+                className="upload-dropzone"
+                onClick={() => fileInputRef.current?.click()}
+                onDrop={handleDropzone}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.currentTarget.classList.add('drag-active')
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.classList.remove('drag-active')
+                }}
+              >
+                <div className="upload-dropzone-icon">📄</div>
+                <p className="upload-dropzone-text">Drop your PDF here</p>
+                <p className="upload-dropzone-hint">or click to browse</p>
+              </div>
+            ) : (
+              <div className="upload-file-display">
+                <div className="upload-file-info">
+                  <div className="upload-file-icon">✓</div>
+                  <p className="upload-file-name">{selectedFile.name}</p>
+                </div>
+                <button
+                  className="upload-file-remove"
+                  onClick={() => setSelectedFile(null)}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              className="upload-file-input"
+              onChange={handleFileInputChange}
+            />
+
+            <div className="upload-button-group">
+              <button className="upload-button-cancel" onClick={handleCloseOverlay}>
+                Cancel
+              </button>
+              <button
+                className="upload-button-submit"
+                onClick={handleUploadSubmit}
+                disabled={!selectedFile}
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
