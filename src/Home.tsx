@@ -1,121 +1,104 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import logo from './assets/img/PDFEditor_logo.png'
+import EditPage from './Edit'
 import './Home.css'
 
 function Home() {
-  const [count, setCount] = useState(0)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const onUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file)
+      setUploadProgress(0)
+      setIsLoading(true)
+    } else {
+      setSelectedFile(null)
+      setIsLoading(false)
+      setUploadProgress(0)
+    }
+  }
+
+  useEffect(() => {
+    if (!isLoading) {
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setUploadProgress((current) => {
+        const next = Math.min(current + Math.floor(Math.random() * 14) + 8, 100)
+        return next
+      })
+    }, 180)
+
+    return () => window.clearInterval(interval)
+  }, [isLoading])
+
+  useEffect(() => {
+    if (uploadProgress >= 100 && isLoading) {
+      const timeout = window.setTimeout(() => {
+        setIsLoading(false)
+        setEditorOpen(true)
+      }, 350)
+      return () => window.clearTimeout(timeout)
+    }
+  }, [uploadProgress, isLoading])
+
+  if (editorOpen && selectedFile) {
+    return <EditPage file={selectedFile} onBack={() => setEditorOpen(false)} />
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/Home.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+    <div className="home-page">
+      <div className="brand">
+        <img src={logo} alt="PDF Editor logo" />
+      </div>
+
+      <main className="hero-panel">
+        <h1>PDF EDITOR</h1>
+
+        <button className="upload-card" type="button" onClick={onUploadClick}>
+          <span>UPLOAD PDF FILE</span>
         </button>
-      </section>
 
-      <div className="ticks"></div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf"
+          className="hidden-file-input"
+          onChange={onFileChange}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        {selectedFile ? (
+          <p className="file-label">Selected file: {selectedFile.name}</p>
+        ) : (
+          <p className="file-label file-label--hint">Click above to choose a PDF file</p>
+        )}
+      </main>
+
+      {isLoading && (
+        <div className="loading-overlay" role="status" aria-live="polite">
+          <div className="loading-card">
+            <p className="loading-title">Uploading, please wait...</p>
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <span className="progress-value">{uploadProgress}%</span>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </div>
   )
 }
 
