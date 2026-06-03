@@ -158,16 +158,13 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
 
           <section className="document-panel">
             <div className="document-header">
-              <div className="document-title">Regression Analysis</div>
+                <div className="document-controls">
+                    <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
+                    Previous</button>
+                    <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
+                    Next</button>
+                </div>
               <div className="document-pages">Page {currentPage} of {pageCount}</div>
-            </div>
-            <div className="document-controls">
-              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
-                Previous
-              </button>
-              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
-                Next
-              </button>
             </div>
             <div className="document-preview">
               <div className="document-sheet">
