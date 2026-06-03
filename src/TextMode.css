@@ -1,0 +1,231 @@
+.text-mode-active {
+  cursor: text;
+}
+
+.pdf-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: inherit;
+}
+
+.text-elements-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.text-element {
+  position: absolute;
+  pointer-events: all;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 400px;
+  color: #000;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: text;
+  user-select: text;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.text-element:hover {
+  border-color: rgba(228, 84, 84, 0.8);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.text-element.editing {
+  border: 2px solid #e45454;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(228, 84, 84, 0.2);
+}
+
+.text-input {
+  position: absolute;
+  min-width: 100px;
+  padding: 4px 6px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 2px solid #e45454;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #000;
+  z-index: 10;
+  resize: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #ff7070;
+  box-shadow: 0 0 0 3px rgba(228, 84, 84, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-button.active.text-mode {
+  background: rgba(228, 84, 84, 0.35);
+}
+
+.text-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+.text-toolbar-left,
+.text-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-toolbar-button {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.text-toolbar-button:hover:not(:disabled) {
+  background: rgba(228, 84, 84, 0.14);
+  transform: translateY(-1px);
+}
+
+.text-toolbar-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.text-toolbar-button.active {
+  background: rgba(228, 84, 84, 0.35);
+  border-color: rgba(228, 84, 84, 0.45);
+}
+
+.text-toolbar-dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 82px;
+}
+
+.dropdown-label {
+  white-space: nowrap;
+}
+
+.dropdown-icon {
+  margin-left: 8px;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.text-toolbar-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 200px;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.text-toolbar-dropdown-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.text-toolbar-dropdown-input {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+
+.text-toolbar-dropdown-input:focus {
+  outline: none;
+  border-color: rgba(228, 84, 84, 0.6);
+}
+
+.text-toolbar-dropdown-apply {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(228, 84, 84, 0.12);
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.text-toolbar-dropdown-apply:hover:not(:disabled) {
+  background: rgba(228, 84, 84, 0.25);
+}
+
+.text-toolbar-dropdown-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.text-toolbar-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 10px;
+}
+
+.text-toolbar-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.text-toolbar-dropdown-item:hover {
+  background: rgba(228, 84, 84, 0.14);
+}
+
+.text-toolbar-select {
+  display: none;
+}
+
+.text-element.selected {
+  box-shadow: 0 0 0 2px rgba(228, 84, 84, 0.2);
+}
+
+.document-sheet.text-mode-enabled {
+  position: relative;
+  overflow: hidden;
+}
