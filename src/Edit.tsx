@@ -5,7 +5,7 @@ import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import './Home.css'
 import './UploadOverlay.css'
 import './TextMode.css'
-import {ChevronLeft, ChevronRight, ArrowLeft, MousePointerClick, AArrowUp, AArrowDown, Undo, Redo, Trash, Type, Bold, Underline, Signature, PenTool, X, Plus} from "lucide-react"
+import {ChevronLeft, ChevronRight, ArrowLeft, MousePointerClick, AArrowUp, AArrowDown, Undo, Redo, Trash, Type, Bold, Underline, Signature, PenTool, X, Check} from "lucide-react"
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -563,17 +563,17 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
               <button className={`sidebar-button ${isTextMode ? 'active text-mode' : ''}`} onClick={handleTextModeToggle}><Type/></button>
               <button className="sidebar-button"><Signature/></button>
               <button className="sidebar-button"><PenTool/></button>
-              <button className="sidebar-button"><X/></button>
-              <button className="sidebar-button"><Plus/></button>
+              <button className="sidebar-button"><X/></button>  
+              <button className="sidebar-button"><Check/></button>
             </aside>
             <aside className="editor-sidebar-main">
                   <button className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}type="button"onClick={handleToggleBold}><Bold/></button>
                   <button className="sidebar-button"><Underline/></button>
                   <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2)}>
-                    <AArrowDown className="font-size"/>
+                    <AArrowDown/>
                   </button>
                   <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2)}>
-                    <AArrowUp className="font-size 24"/>
+                    <AArrowUp/>
                   </button>
                   <button className="sidebar-button" type="button" onClick={handleDeleteSelectedText}>
                     <Trash/>

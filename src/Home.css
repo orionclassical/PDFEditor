@@ -209,6 +209,8 @@ body {
 }
 
 .toolbar-button {
+  font-family: 'Homenaje', serif;
+  font-size: 0.95rem;
   border: none;
   border-radius: 14px;
   padding: 10px 16px;
@@ -450,6 +452,8 @@ body {
 }
 
 .back-home {
+  font-family: 'Homenaje', serif;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
   gap: 8px;
