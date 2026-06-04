@@ -5,6 +5,7 @@ import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import './Home.css'
 import './UploadOverlay.css'
 import './TextMode.css'
+import {ChevronLeft, ChevronRight, ArrowLeft, MousePointerClick, AArrowUp, AArrowDown, Undo, Redo, Trash, Type, Bold, Underline, Signature, PenTool, X, Plus} from "lucide-react"
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -521,7 +522,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
           <header className="editor-toolbar">
             <div className="toolbar-left">
                 <button className="back-home" type="button" onClick={onBack}>
-                Back to home
+                  <ArrowLeft/> Go back
                 </button>
                 <div className="editor-meta">
                     <div>
@@ -543,113 +544,61 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 onChange={(e) => setSelectedPageSize(e.target.value as any)}
                 className="toolbar-button page-size-select"
               >
-                <option value="a4">A4</option>
-                <option value="8x11">8x11"</option>
-                <option value="8x13">8x13"</option>
-                <option value="8x14">8x14"</option>
+                <option value="a4">A4 (8.27×11.69)</option>
+                <option value="8x11">Short Bondpaper (8x11)"</option>
+                <option value="8x13">Long Bondpaper (8x13)"</option>
+                <option value="8x14">Long Bondpaper (8x14)"</option>
               </select>
               <button className="toolbar-button editor-done" onClick={handleDone} disabled={exporting}>
-                {exporting ? 'Exporting...' : 'DONE'}
+                {exporting ? 'Exporting...' : 'Done'}
               </button>
             </div>
           </header>
         </div>
 
         <div className="editor-main">
-          <aside className="editor-sidebar">
-            <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}>Selection</button>
-            <button className="sidebar-button">Sign</button>
-            <button className={`sidebar-button ${isTextMode ? 'active text-mode' : ''}`} onClick={handleTextModeToggle}>Text</button>
-            <button className="sidebar-button">Erase</button>
-            <button className="sidebar-button">Highlight</button>
-          </aside>
+          <div className="editor-sidebar">
+            <aside className="editor-sidebar-main">
+              <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}><MousePointerClick/></button>
+              <button className={`sidebar-button ${isTextMode ? 'active text-mode' : ''}`} onClick={handleTextModeToggle}><Type/></button>
+              <button className="sidebar-button"><Signature/></button>
+              <button className="sidebar-button"><PenTool/></button>
+              <button className="sidebar-button"><X/></button>
+              <button className="sidebar-button"><Plus/></button>
+            </aside>
+            <aside className="editor-sidebar-main">
+                  <button className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}type="button"onClick={handleToggleBold}><Bold/></button>
+                  <button className="sidebar-button"><Underline/></button>
+                  <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2)}>
+                    <AArrowDown className="font-size"/>
+                  </button>
+                  <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2)}>
+                    <AArrowUp className="font-size 24"/>
+                  </button>
+                  <button className="sidebar-button" type="button" onClick={handleDeleteSelectedText}>
+                    <Trash/>
+                  </button>
+                  <button className="page-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
+                    <Undo/>
+                  </button>
+                  <button className="page-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
+                    <Redo/>
+                  </button>
+              </aside>
+          </div>
+
+        <div className="editor-page-count">
+          <aside className="editor-sidebar-page">
+              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
+                    <ChevronLeft/></button>
+              <div className="document-pages">{currentPage} / {pageCount}</div>
+              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
+                    <ChevronRight/></button>
+            </aside>
+          </div>
 
           <section className="document-panel">
-            <div className="document-header">
-                <div className="document-controls">
-                    <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
-                    Previous</button>
-                    <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
-                    Next</button>
-                </div>
-              <div className="document-pages">Page {currentPage} of {pageCount}</div>
-            </div>
-            {(isTextMode || isSelectionMode) && (
-              <div className="text-toolbar">
-                <div className="text-toolbar-left">
-                  <button className="text-toolbar-button" type="button" onClick={handleDeleteSelectedText} disabled={!selectedTextId}>
-                    Delete
-                  </button>
-                  <button className="text-toolbar-button" type="button" onClick={() => handleFontSizeChange(-2)} disabled={!selectedTextId}>
-                    A-
-                  </button>
-                  <button className="text-toolbar-button" type="button" onClick={() => handleFontSizeChange(2)} disabled={!selectedTextId}>
-                    A+
-                  </button>
-                  <div className="text-toolbar-dropdown">
-                    <button
-                      className="text-toolbar-button dropdown-toggle"
-                      type="button"
-                      onClick={toggleFontSizeDropdown}
-                      disabled={!selectedTextId}
-                    >
-                      <span className="dropdown-label">{selectedText?.fontSize ?? 14}px</span>
-                      <span className="dropdown-icon">▾</span>
-                    </button>
-                    {fontSizeDropdownOpen && (
-                      <div className="text-toolbar-dropdown-menu">
-                        <div className="text-toolbar-dropdown-input-row">
-                          <input
-                            className="text-toolbar-dropdown-input"
-                            type="text"
-                            value={fontSizeInput}
-                            onChange={(e) => handleFontSizeInputChange(e.target.value)}
-                            onKeyDown={handleFontSizeInputKeyDown}
-                            placeholder="Custom"
-                            autoFocus
-                          />
-                          <button
-                            className="text-toolbar-dropdown-apply"
-                            type="button"
-                            onClick={handleFontSizeInputCommit}
-                            disabled={!fontSizeInput}
-                          >
-                            Set
-                          </button>
-                        </div>
-                        <div className="text-toolbar-dropdown-divider" />
-                        {[10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 56, 64].map((size) => (
-                          <button
-                            key={size}
-                            className="text-toolbar-dropdown-item"
-                            type="button"
-                            onClick={() => handleFontSizeSelect(size)}
-                          >
-                            {size}px
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    className={`text-toolbar-button ${selectedText?.bold ? 'active' : ''}`}
-                    type="button"
-                    onClick={handleToggleBold}
-                    disabled={!selectedTextId}
-                  >
-                    Bold
-                  </button>
-                </div>
-                <div className="text-toolbar-right">
-                  <button className="text-toolbar-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
-                    Undo
-                  </button>
-                  <button className="text-toolbar-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
-                    Redo
-                  </button>
-                </div>
-              </div>
-            )}
+          
             <div className="document-preview">
               <div 
                 className={`document-sheet ${isTextMode ? 'text-mode-enabled' : ''}`}
