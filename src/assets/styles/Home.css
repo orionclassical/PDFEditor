@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Homenaje&family=Jockey+One&display=swap');
+
+:root {
+  color: #ffffff;
+  background: #191919;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #191919;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  border: none;
+}
+
+body {
+  font-family: 'Homenaje', serif;
+  color: #ffffff;
+}
+
+.home-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+
+.brand {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+
+.brand img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.hero-panel {
+  text-align: center;
+  max-width: 920px;
+  width: 100%;
+}
+
+.hero-panel h1 {
+  margin: 0 0 48px;
+  font-family: 'Jockey One', sans-serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  color: #E45454;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.upload-card {
+  margin: 0 auto;
+  max-width: 780px;
+  min-height: 240px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(255, 255, 255, 0.48);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.upload-card:hover,
+.upload-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(228, 84, 84, 0.9);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.upload-card:focus-visible {
+  outline: 3px solid rgba(228, 84, 84, 0.55);
+  outline-offset: 6px;
+}
+
+.upload-card span {
+  font-family: 'Homenaje', serif;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-label {
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1rem;
+  font-family: 'Homenaje', serif;
+}
+
+.file-label--hint {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 20;
+}
+
+.loading-card {
+  width: min(92vw, 460px);
+  padding: 28px 26px;
+  border-radius: 24px;
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  text-align: left;
+}
+
+.loading-title {
+  margin: 0 0 18px;
+  color: #ffffff;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6a6a, #e45454);
+  transition: width 0.18s ease;
+}
+
+.progress-value {
+  display: inline-block;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .home-page {
+    padding: 24px 16px;
+  }
+
+  .brand {
+    top: 16px;
+    left: 16px;
+  }
+
+  .hero-panel h1 {
+    margin-bottom: 32px;
+  }
+
+  .upload-card {
+    min-height: 200px;
+  }
+}
