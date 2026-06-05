@@ -128,7 +128,8 @@
 }
 
 .page-button {
-  border-radius: 12px;
+  border-radius: 16px;
+  padding: 10px 10px;
   border: none;
   background: none;
   color: #ffffff;
