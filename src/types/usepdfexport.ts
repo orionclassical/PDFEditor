@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { jsPDF } from 'jspdf/dist/jspdf.es.min.js'
 import type { PageSize, PageTextsMap } from './types'
-import { getScaleForPageCount, getPageSizeDimensions, renderTextOverlayOnCanvas } from './pdfUtils'
+import { getScaleForPageCount, getPageSizeDimensions, renderTextOverlayOnCanvas } from './pdfutils'
 
 export function usePdfExport(
   pdfDocRef: React.MutableRefObject<any>,

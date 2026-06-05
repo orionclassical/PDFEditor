@@ -106,6 +106,23 @@ export function useTextElements() {
     setEditingText('')
   }
 
+  const handleToggleUnderline = (currentPage: number) => {
+    // 1. Ensure a text element is currently selected
+    if (!selectedTextId) return;
+
+    const currentTexts = getCurrentPageTexts(currentPage);
+    
+    // 2. Map through the texts and toggle the underline boolean for the selected text
+    const updatedTexts = currentTexts.map((el) =>
+      el.id === selectedTextId ? { ...el, underline: !el.underline } : el
+    );
+
+    // 3. Save the updated list back to the state
+    setCurrentPageTexts(currentPage, updatedTexts);
+    
+    // (Optional) Push to historyStack here if you want undo/redo functionality
+  };
+
   return {
     pageTexts,
     selectedTextId,
@@ -120,6 +137,7 @@ export function useTextElements() {
     handleDeleteSelectedText,
     handleFontSizeChange,
     handleToggleBold,
+    handleToggleUnderline,
     handleTextBlur,
     handleUndo,
     handleRedo,

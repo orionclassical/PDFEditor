@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import logo from './assets/img/PDFEditor_logo.png'
 import EditPage from './Edit'
-import './Home.css'
+import './assets/styles/Home.css'
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)

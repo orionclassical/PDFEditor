@@ -7,6 +7,7 @@ export interface TextElement {
   text: string
   fontSize: number
   bold: boolean
+  underline?: boolean;
 }
 
 export type PageTextsMap = Record<number, TextElement[]>

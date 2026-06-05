@@ -17,17 +17,32 @@ export const getPageSizeDimensions = (size: PageSize): [number, number] => {
   return sizes[size]
 }
 
-export const renderTextOverlayOnCanvas = (
-  context: CanvasRenderingContext2D,
-  texts: TextElement[]
-): void => {
-  context.fillStyle = '#000000'
-  context.textBaseline = 'top'
-  texts.forEach((textItem) => {
-    context.font = `${textItem.bold ? 'bold ' : ''}${textItem.fontSize}px Arial`
-    const lines = textItem.text.split('\n')
-    lines.forEach((line, index) => {
-      context.fillText(line, textItem.x, textItem.y + index * textItem.fontSize * 1.2)
-    })
-  })
+export function renderTextOverlayOnCanvas(ctx: CanvasRenderingContext2D, texts: any[]) {
+  texts.forEach((el) => {
+    // 1. Your existing font configuration setup
+    const fontWeight = el.bold ? 'bold' : 'normal';
+    ctx.font = `${fontWeight} ${el.fontSize}px Arial`; // (Or whatever font family you use)
+    ctx.fillStyle = 'black';
+    ctx.textBaseline = 'top'; // Essential for calculating underline position accurately
+
+    // 2. Your existing code that draws the text string
+    ctx.fillText(el.text, el.x, el.y);
+
+    // 3. ADD THE UNDERLINE LOGIC HERE 👇
+    if (el.underline) {
+      // Calculate how wide the typed text actually is on the canvas
+      const textWidth = ctx.measureText(el.text).width;
+      
+      // Position the line slightly below the text
+      // Since baseline is 'top', text ends roughly at (el.y + el.fontSize)
+      const underlineY = el.y + el.fontSize + 2; 
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'black';                  // Matches your text color
+      ctx.lineWidth = Math.max(1, el.fontSize * 0.08); // Thickness scales with font size
+      ctx.moveTo(el.x, underlineY);               // Start line at left of text
+      ctx.lineTo(el.x + textWidth, underlineY);   // End line at right of text
+      ctx.stroke();
+    }
+  });
 }
