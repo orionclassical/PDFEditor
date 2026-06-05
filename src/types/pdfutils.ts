@@ -7,15 +7,28 @@ export const getScaleForPageCount = (count: number): number => {
   return 0.65
 }
 
-export const getPageSizeDimensions = (size: PageSize): [number, number] => {
-  const sizes: Record<PageSize, [number, number]> = {
-    a4:    [210, 297],
+export const getPageSizeDimensions = (
+  size: PageSize, 
+  originalPointsWidth?: number, 
+  originalPointsHeight?: number
+): [number, number] => {
+  const sizes: Record<Exclude<PageSize, 'original'>, [number, number]> = {
+    a4: [210, 297],
     '8x11': [203.2, 279.4],
     '8x13': [203.2, 330.2],
     '8x14': [203.2, 355.6],
+  };
+
+  if (size === 'original' && originalPointsWidth && originalPointsHeight) {
+    // Convert PDF points to millimeters (1 point = 0.352778 mm)
+    const mmWidth = originalPointsWidth * 0.352778;
+    const mmHeight = originalPointsHeight * 0.352778;
+    return [mmWidth, mmHeight];
   }
-  return sizes[size]
-}
+
+  // Fallback to standard Letter size if 'original' is picked but dimensions aren't provided
+  return sizes[size === 'original' ? '8x11' : size];
+};
 
 export function renderTextOverlayOnCanvas(ctx: CanvasRenderingContext2D, texts: any[]) {
   texts.forEach((el) => {

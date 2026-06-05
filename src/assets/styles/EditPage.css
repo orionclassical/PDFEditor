@@ -55,25 +55,39 @@
   transform: translateY(-1px);
 }
 
-.page-size-select {
-  border: none;
-  border-radius: 14px;
-  padding: 10px 16px;
+.page-size-selector{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
   background: rgba(255, 255, 255, 0.08);
+  padding: 0px 6px;
+  border-radius: 14px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.page-size-select {
+  font-family: 'Homenaje', serif;
+  font-size: 0.95rem;
+  padding: 10px 0px 10px 10px;
+  border: none;
+  background: none;
+  border-radius: 14px;
+  width: fit-content;
   color: #ffffff;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
   font-size: 0.95rem;
   font-family: inherit;
 }
 
-.page-size-select:hover {
+.page-size-selector:hover {
   background: rgba(228, 84, 84, 0.14);
+  transform: translateY(-1px);
 }
 
 .page-size-select:focus {
   outline: none;
-  background: rgba(228, 84, 84, 0.25);
 }
 
 .page-size-select option {
