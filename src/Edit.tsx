@@ -41,7 +41,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     historyStack, redoStack,
     setEditingText, getCurrentPageTexts, setCurrentPageTexts,
     handleSelectText, handleDeleteSelectedText, handleFontSizeChange,
-    handleToggleBold, handleTextBlur, handleUndo, handleRedo, clearSelection,
+    handleToggleBold, handleToggleUnderline, handleTextBlur, handleUndo, handleRedo, clearSelection,
   } = useTextElements()
 
   const { exporting, handleDone } = usePdfExport(
@@ -191,7 +191,12 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
               >
                 <Bold size={18} />
               </button>
-              <button className="sidebar-button" disabled><Underline size={18} /></button>
+              <button className={`sidebar-button ${selectedText?.underline ? 'active' : ''}`}
+                type="button"
+                onClick={() => handleToggleUnderline(currentPage)}
+                disabled={!selectedTextId}>
+                <Underline size={18} />
+                </button>
               <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2, currentPage)} disabled={!selectedTextId}>
                 <AArrowDown size={18} />
               </button>
@@ -255,11 +260,13 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             key={el.id}
                             className={`text-element${editingId === el.id ? ' editing' : ''}${selectedTextId === el.id ? ' selected' : ''}`}
                             style={{
+                              position: 'absolute',
                               left: `${el.x * displayScale}px`,
                               top: `${el.y * displayScale}px`,
                               fontSize: `${el.fontSize * displayScale}px`,
-                              fontWeight: el.bold ? 700 : 400,
+                              fontWeight: el.bold ? 'bold' : 'normal',
                               cursor: isSelectionMode && editingId !== el.id ? 'grab' : 'text',
+                              textDecoration: el.underline ? 'underline' : 'none',
                             }}
                             onMouseDown={(e) => {
                               if (isSelectionMode && editingId !== el.id) handleTextMouseDown(e, el.id)
@@ -270,7 +277,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               setTimeout(() => editInputRef.current?.focus(), 0)
                             }}
                           >
-                            {el.text || (isTextMode ? 'Click to edit' : '')}
+                            {el.text || (isTextMode && editingId !== el.id ? 'Click to edit' : '')}
                           </div>
                         ))}
                         {editingId && (
@@ -284,6 +291,10 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             style={{
                               left: `${currentTexts.find((el) => el.id === editingId)?.x! * displayScale}px`,
                               top: `${currentTexts.find((el) => el.id === editingId)?.y! * displayScale}px`,
+
+                              fontWeight: currentTexts.find((el) => el.id === editingId)?.bold ? 'bold' : 'normal',
+                              textDecoration: currentTexts.find((el) => el.id === editingId)?.underline ? 'underline' : 'none',
+                              fontSize: `${currentTexts.find((el) => el.id === editingId)?.fontSize! * displayScale}px`,
                             }}
                           />
                         )}
