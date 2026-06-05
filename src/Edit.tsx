@@ -169,55 +169,6 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
 
         {/* ── MAIN ── */}
         <div className="editor-main">
-
-          {/* Tool sidebars */}
-          <div className="editor-sidebar">
-            <aside className="editor-sidebar-main">
-              <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}>
-                <MousePointerClick size={18} />
-              </button>
-              <button className={`sidebar-button ${isTextMode ? 'active' : ''}`} onClick={handleTextModeToggle}>
-                <Type size={18} />
-              </button>
-              <button className="sidebar-button"><Signature size={18} /></button>
-              <button className="sidebar-button"><PenTool size={18} /></button>
-              <button className="sidebar-button"><X size={18} /></button>
-              <button className="sidebar-button"><Check size={18} /></button>
-            </aside>
-
-            <aside className="editor-sidebar-main">
-              <button
-                className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}
-                type="button"
-                onClick={() => handleToggleBold(currentPage)}
-                disabled={!selectedTextId}
-              >
-                <Bold size={18} />
-              </button>
-              <button className={`sidebar-button ${selectedText?.underline ? 'active' : ''}`}
-                type="button"
-                onClick={() => handleToggleUnderline(currentPage)}
-                disabled={!selectedTextId}>
-                <Underline size={18} />
-                </button>
-              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2, currentPage)} disabled={!selectedTextId}>
-                <AArrowDown size={18} />
-              </button>
-              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2, currentPage)} disabled={!selectedTextId}>
-                <AArrowUp size={18} />
-              </button>
-              <button className="sidebar-button" type="button" onClick={() => handleDeleteSelectedText(currentPage)} disabled={!selectedTextId}>
-                <Trash size={18} />
-              </button>
-              <button className="page-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
-                <Undo size={18} />
-              </button>
-              <button className="page-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
-                <Redo size={18} />
-              </button>
-            </aside>
-          </div>
-
           {/* Page counter */}
           <div className="editor-page-count">
             <aside className="editor-sidebar-page">
@@ -233,6 +184,20 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
 
           {/* Document canvas */}
           <section className="document-panel">
+            <div className="editor-sidebar">
+            <aside className="editor-sidebar-main">
+              <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}>
+                <MousePointerClick size={18} />
+              </button>
+              <button className={`sidebar-button ${isTextMode ? 'active' : ''}`} onClick={handleTextModeToggle}>
+                <Type size={18} />
+              </button>
+              <button className="sidebar-button"><Signature size={18} /></button>
+              <button className="sidebar-button"><PenTool size={18} /></button>
+              <button className="sidebar-button"><X size={18} /></button>
+              <button className="sidebar-button"><Check size={18} /></button>
+            </aside>
+          </div>
             <div className="document-preview">
               <div
                 className={`document-sheet ${isTextMode ? 'text-mode-enabled' : ''}`}
@@ -310,14 +275,49 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 <div className="doc-page-label">Page {currentPage}</div>
               </div>
             </div>
+            <div className="editor-sidebar">
+            <aside className="editor-sidebar-main">
+              <button
+                className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}
+                type="button"
+                onClick={() => handleToggleBold(currentPage)}
+                disabled={!selectedTextId}
+              >
+                <Bold size={18} />
+              </button>
+              <button className={`sidebar-button ${selectedText?.underline ? 'active' : ''}`}
+                type="button"
+                onClick={() => handleToggleUnderline(currentPage)}
+                disabled={!selectedTextId}>
+                <Underline size={18} />
+                </button>
+              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2, currentPage)} disabled={!selectedTextId}>
+                <AArrowDown size={18} />
+              </button>
+              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2, currentPage)} disabled={!selectedTextId}>
+                <AArrowUp size={18} />
+              </button>
+              <button className="sidebar-button" type="button" onClick={() => handleDeleteSelectedText(currentPage)} disabled={!selectedTextId}>
+                <Trash size={18} />
+              </button>
+              <button className="page-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
+                <Undo size={18} />
+              </button>
+              <button className="page-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
+                <Redo size={18} />
+              </button>
+            </aside>
+          </div>
           </section>
 
         </div>
+        
       </div>
-
+      
       {showUploadOverlay && (
         <UploadOverlay onClose={() => setShowUploadOverlay(false)} />
       )}
+      
     </div>
   )
 }

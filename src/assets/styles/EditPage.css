@@ -147,7 +147,7 @@
 
 .editor-sidebar {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -156,7 +156,7 @@
 
 .editor-sidebar-main {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 12px;
   padding: 18px;
   background: rgba(255, 255, 255, 0.04);
@@ -186,7 +186,7 @@
 .sidebar-button {
   border: none;
   width: 100%;
-  padding: 5px 10px;
+  padding: 10px 10px;
   text-align: center;
   border-radius: 20px;
   background: none;
