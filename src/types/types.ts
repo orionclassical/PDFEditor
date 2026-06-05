@@ -1,4 +1,4 @@
-export type PageSize = 'a4' | '8x11' | '8x13' | '8x14'
+export type PageSize = 'a4' | '8x11' | '8x13' | '8x14' | 'original'
 
 export interface TextElement {
   id: string

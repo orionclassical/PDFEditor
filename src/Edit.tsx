@@ -23,7 +23,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [showUploadOverlay, setShowUploadOverlay] = useState(false)
   const [isTextMode, setIsTextMode] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(true)
-  const [selectedPageSize, setSelectedPageSize] = useState<PageSize>('8x11')
+  const [selectedPageSize, setSelectedPageSize] = useState<PageSize>('original')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
 
@@ -147,16 +147,19 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 Upload New
               </button>
               <button className="toolbar-button">Convert</button>
-              <select
-                value={selectedPageSize}
-                onChange={(e) => setSelectedPageSize(e.target.value as PageSize)}
-                className="toolbar-button page-size-select"
-              >
-                <option value="a4">A4 (8.27×11.69)</option>
-                <option value="8x11">Short Bondpaper (8x11)"</option>
-                <option value="8x13">Long Bondpaper (8x13)"</option>
-                <option value="8x14">Long Bondpaper (8x14)"</option>
-              </select>
+              <div className="page-size-selector">
+                <select
+                  value={selectedPageSize}
+                  onChange={(e) => setSelectedPageSize(e.target.value as PageSize)}
+                  className="page-size-select"
+                >
+                  <option value="original">Original Size</option>
+                  <option value="a4">A4 (8.27×11.69)</option>
+                  <option value="8x11">Letter (8x11)"</option>
+                  <option value="8x13">Legal (8x13)"</option>
+                  <option value="8x14">Tabloid (8x14)"</option>
+                </select>
+              </div>
               <button className="toolbar-button editor-done" onClick={handleDone} disabled={exporting}>
                 {exporting ? 'Exporting...' : 'Done'}
               </button>
