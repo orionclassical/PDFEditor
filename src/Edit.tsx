@@ -193,7 +193,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                   <option value="8x14">Tabloid (8x14)"</option>
                 </select>
               </div>
-              <button className="toolbar-button editor-done" onClick={handleDone} disabled={exporting}>
+              <button className="toolbar-done editor-done" onClick={handleDone} disabled={exporting}>
                 {exporting ? 'Exporting...' : 'Done'}
               </button>
             </div>
