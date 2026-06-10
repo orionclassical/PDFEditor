@@ -104,6 +104,7 @@ export function usePdfRenderer(file: File) {
     currentPage,
     pageCount,
     pageImage,
+    pageSizes,
     loadingPage,
     pdfDocRef,
     gotoPrevious,

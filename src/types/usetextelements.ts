@@ -25,11 +25,25 @@ export function useTextElements() {
     savePageTexts({ ...pageTexts, [currentPage]: texts })
   }
 
+  // Single click — select only, no editing
   const handleSelectText = (id: string, currentPage: number) => {
+    setSelectedTextId(id)
+    // Do NOT set editingId here — editing requires double click
+  }
+
+  // Double click — enter edit mode
+  const handleEditText = (id: string, currentPage: number) => {
     setSelectedTextId(id)
     setEditingId(id)
     const selected = getCurrentPageTexts(currentPage).find((el) => el.id === id)
     setEditingText(selected?.text ?? '')
+  }
+
+  // Click outside any text — deselect
+  const handleDeselect = () => {
+    setSelectedTextId(null)
+    setEditingId(null)
+    setEditingText('')
   }
 
   const handleDeleteSelectedText = (currentPage: number) => {
@@ -65,6 +79,16 @@ export function useTextElements() {
     )
   }
 
+  const handleToggleUnderline = (currentPage: number) => {
+    if (!selectedTextId) return
+    setCurrentPageTexts(
+      currentPage,
+      getCurrentPageTexts(currentPage).map((el) =>
+        el.id === selectedTextId ? { ...el, underline: !el.underline } : el
+      )
+    )
+  }
+
   const handleTextBlur = (currentPage: number) => {
     if (editingId) {
       setCurrentPageTexts(
@@ -76,6 +100,7 @@ export function useTextElements() {
     }
     setEditingId(null)
     setEditingText('')
+    // Keep selectedTextId so the element stays visually selected after editing
   }
 
   const handleUndo = () => {
@@ -106,23 +131,6 @@ export function useTextElements() {
     setEditingText('')
   }
 
-  const handleToggleUnderline = (currentPage: number) => {
-    // 1. Ensure a text element is currently selected
-    if (!selectedTextId) return;
-
-    const currentTexts = getCurrentPageTexts(currentPage);
-    
-    // 2. Map through the texts and toggle the underline boolean for the selected text
-    const updatedTexts = currentTexts.map((el) =>
-      el.id === selectedTextId ? { ...el, underline: !el.underline } : el
-    );
-
-    // 3. Save the updated list back to the state
-    setCurrentPageTexts(currentPage, updatedTexts);
-    
-    // (Optional) Push to historyStack here if you want undo/redo functionality
-  };
-
   return {
     pageTexts,
     selectedTextId,
@@ -134,6 +142,8 @@ export function useTextElements() {
     setCurrentPageTexts,
     getCurrentPageTexts,
     handleSelectText,
+    handleEditText,
+    handleDeselect,
     handleDeleteSelectedText,
     handleFontSizeChange,
     handleToggleBold,
