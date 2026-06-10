@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import logo from './assets/img/PDFEditor_logo.png'
 import EditPage from './Edit'
 import './assets/styles/Home.css'
+import { FaGithub } from "react-icons/fa";
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -81,6 +82,15 @@ function Home() {
           <p className="file-label file-label--hint">Click above to choose a PDF file</p>
         )}
       </main>
+
+      <div className="dev">
+        <p>
+          <a href="https://github.com/orionclassical" className="link" target="_blank" rel="noopener noreferrer">
+            <FaGithub style={{ marginRight: "8px" }} />
+            github/orionclassical
+          </a>
+        </p>
+      </div>
 
       {isLoading && (
         <div className="loading-overlay" role="status" aria-live="polite">
