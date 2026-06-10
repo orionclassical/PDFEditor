@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: #191919;
+  background: #1f1f1f;
   position: sticky;
   top: 0;
   left: 0;
@@ -47,7 +47,7 @@
   gap: 20px;
 }
 
-.toolbar-button {
+.toolbar-button ,.toolbar-done{
   font-family: 'Homenaje', serif;
   font-size: 0.95rem;
   border: none;
@@ -61,6 +61,10 @@
 
 .toolbar-button:hover {
   background: rgba(228, 84, 84, 0.14);
+  transform: translateY(-1px);
+}
+
+.toolbar-done:hover {
   transform: translateY(-1px);
 }
 
@@ -129,6 +133,11 @@
   color: #ffffff;
   font-size: 1rem;
   font-weight: 600;
+  max-width: 350px;         
+  white-space: nowrap;      
+  overflow: hidden;        
+  text-overflow: ellipsis;  
+  display: block;
 }
 
 .editor-main {
