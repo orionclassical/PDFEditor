@@ -34,8 +34,25 @@ body {
   position: relative;
   padding: 40px 24px;
   box-sizing: border-box;
+  flex-direction: column;
 }
 
+.dev{
+  position: absolute;
+  bottom: 16px;
+}
+
+.link{
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  text-decoration: none;  
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.link:hover{
+  color: #FFFFFF;
+}
 .brand {
   position: absolute;
   top: 24px;
