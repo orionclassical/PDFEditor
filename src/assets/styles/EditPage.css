@@ -15,7 +15,13 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: #FFFFFF0A;
+  background: #191919;
+  position: sticky;
+  top: 0;
+  left: 0;
+  
+  /* Critical: Keeps the header layered ON TOP of the PDF canvas elements */
+  z-index: 100;
 }
 
 .editor-toolbar {
@@ -27,13 +33,16 @@
 }
 
 .toolbar-left {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 50px;
 }
 
 .toolbar-actions {
+  width: 100%;
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -100,12 +109,13 @@
 }
 
 .editor-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   padding: 0;
   background: transparent;
   border: none;
+  width: 100%;
 }
 
 .meta-label {
@@ -125,10 +135,16 @@
   display: grid;
   grid-template-rows: 80px minmax(0, 1fr);
   gap: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 30px 0px;
 }
 
 .page-button {
-  border-radius: 12px;
+  border-radius: 16px;
+  padding: 10px 10px;
   border: none;
   background: none;
   color: #ffffff;
@@ -147,16 +163,20 @@
 
 .editor-sidebar {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
   padding: 18px;
+  position: sticky;
+  top: 220px; 
+  align-self: flex-start; 
+  z-index: 10;
 }
 
 .editor-sidebar-main {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 12px;
   padding: 18px;
   background: rgba(255, 255, 255, 0.04);
@@ -168,7 +188,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 50%;
 }
 
 .editor-sidebar-page {
@@ -186,7 +206,7 @@
 .sidebar-button {
   border: none;
   width: 100%;
-  padding: 5px 10px;
+  padding: 10px 10px;
   text-align: center;
   border-radius: 20px;
   background: none;
@@ -208,6 +228,8 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
+  position: relative;
+  z-index: 1;
   gap: 16px;
 }
 
@@ -235,6 +257,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1; 
 }
 
 .pdf-image {
@@ -279,6 +302,7 @@
 
 .back-home {
   font-family: 'Homenaje', serif;
+  width: 40%;
   font-size: 0.95rem;
   display: flex;
   align-items: center;

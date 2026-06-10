@@ -22,15 +22,6 @@ export function usePdfExport(
 
       for (let pageNum = 1; pageNum <= pageCount; pageNum += 1) {
         const page = await pdfDocRef.current.getPage(pageNum)
-        // 1. Get the original, unscaled page dimensions in points
-        const unscaledViewport = page.getViewport({ scale: 1.0 })
-        
-        // 2. Pass original dimensions into your updated utility function
-        const [pdfWidth, pdfHeight] = getPageSizeDimensions(
-          selectedPageSize,
-          unscaledViewport.width,
-          unscaledViewport.height
-        )
         const viewport = page.getViewport({ scale: pageScale })
         const canvas = document.createElement('canvas')
         canvas.width = viewport.width
@@ -41,7 +32,7 @@ export function usePdfExport(
         await page.render({ canvasContext: context, viewport }).promise
 
         const texts = pageTexts[pageNum] || []
-        renderTextOverlayOnCanvas(context, texts)
+        renderTextOverlayOnCanvas(context, texts, canvas.width, canvas.width)
 
         const imageData = canvas.toDataURL('image/png')
         if (!pdf) {

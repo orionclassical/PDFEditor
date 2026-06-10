@@ -26,13 +26,13 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [selectedPageSize, setSelectedPageSize] = useState<PageSize>('original')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [displayScale, setDisplayScale] = useState(1)
 
   const documentSheetRef = useRef<HTMLDivElement>(null)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
-  // — Hooks —
   const {
-    currentPage, pageCount, pageImage, loadingPage,
+    currentPage, pageCount, pageImage, pageSizes, loadingPage,
     pdfDocRef, gotoPrevious, gotoNext, getCurrentPageDisplayScale,
   } = usePdfRenderer(file)
 
@@ -40,13 +40,26 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     pageTexts, selectedTextId, editingId, editingText,
     historyStack, redoStack,
     setEditingText, getCurrentPageTexts, setCurrentPageTexts,
-    handleSelectText, handleDeleteSelectedText, handleFontSizeChange,
-    handleToggleBold, handleToggleUnderline, handleTextBlur, handleUndo, handleRedo, clearSelection,
+    handleSelectText, handleEditText, handleDeselect,
+    handleDeleteSelectedText, handleFontSizeChange,
+    handleToggleBold, handleToggleUnderline, handleTextBlur,
+    handleUndo, handleRedo, clearSelection,
   } = useTextElements()
 
   const { exporting, handleDone } = usePdfExport(
     pdfDocRef, pageCount, pageTexts, selectedPageSize
   )
+
+  // Recompute displayScale when page image loads or container resizes
+  useEffect(() => {
+    const sheet = documentSheetRef.current
+    if (!sheet) return
+    const update = () => setDisplayScale(getCurrentPageDisplayScale(documentSheetRef))
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(sheet)
+    return () => ro.disconnect()
+  }, [pageImage, pageSizes, currentPage])
 
   // Clear selection on page change
   useEffect(() => { clearSelection() }, [currentPage])
@@ -66,24 +79,35 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     clearSelection()
   }
 
-  // — Document interactions —
-  const displayScale = getCurrentPageDisplayScale(documentSheetRef)
+  // Read scale live from DOM — never stale, used for all coordinate math
+  const getLiveScale = (): number => getCurrentPageDisplayScale(documentSheetRef)
 
-  const handleDocumentClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isTextMode || !documentSheetRef.current) return
-    const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / displayScale
-    const y = (e.clientY - rect.top) / displayScale
-    const texts = getCurrentPageTexts(currentPage)
-    const clicked = texts.find((el) => x >= el.x && x <= el.x + 200 && y >= el.y && y <= el.y + 30)
-    if (clicked) {
-      handleSelectText(clicked.id, currentPage)
+  // — Document sheet click (background) — deselect
+  const handleSheetClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement
+    if (target.closest(".text-element")) return
+    if (target.closest(".text-input")) return
+    if (target.closest(".text-elements-container")) return
+
+    if (isTextMode) {
+      // If something is selected or being edited, first click outside just deselects
+      if (selectedTextId || editingId) {
+        handleDeselect()
+        return
+      }
+      // Nothing selected — create a new text element at click position
+      if (!documentSheetRef.current) return
+      const rect = documentSheetRef.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left) / getLiveScale()
+      const y = (e.clientY - rect.top) / getLiveScale()
+      const texts = getCurrentPageTexts(currentPage)
+      const newId = Date.now().toString()
+      setCurrentPageTexts(currentPage, [...texts, { id: newId, x, y, text: '', fontSize: 14, bold: false, underline: false }])
+      handleEditText(newId, currentPage)
       setTimeout(() => editInputRef.current?.focus(), 0)
     } else {
-      const newId = Date.now().toString()
-      setCurrentPageTexts(currentPage, [...texts, { id: newId, x, y, text: '', fontSize: 14, bold: false }])
-      handleSelectText(newId, currentPage)
-      setTimeout(() => editInputRef.current?.focus(), 0)
+      // In selection mode: clicking empty area deselects
+      handleDeselect()
     }
   }
 
@@ -98,16 +122,16 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     setDraggingId(elementId)
     handleSelectText(elementId, currentPage)
     setDragOffset({
-      x: e.clientX - rect.left - element.x * displayScale,
-      y: e.clientY - rect.top - element.y * displayScale,
+      x: e.clientX - rect.left - element.x * getLiveScale(),
+      y: e.clientY - rect.top - element.y * getLiveScale(),
     })
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!draggingId || !documentSheetRef.current) return
     const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left - dragOffset.x) / displayScale
-    const y = (e.clientY - rect.top - dragOffset.y) / displayScale
+    const x = (e.clientX - rect.left - dragOffset.x) / getLiveScale()
+    const y = (e.clientY - rect.top - dragOffset.y) / getLiveScale()
     setCurrentPageTexts(
       currentPage,
       getCurrentPageTexts(currentPage).map((el) =>
@@ -135,12 +159,21 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                   <p className="meta-label">Loaded file</p>
                   <p className="meta-value">{file.name}</p>
                 </div>
-                <div>
-                  <p className="meta-label">Pages</p>
-                  <p className="meta-value">{pageCount || '-'}</p>
-                </div>
               </div>
             </div>
+
+            {/* Page counter */}
+          <div className="editor-page-count">
+            <aside className="editor-sidebar-page">
+              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
+                <ChevronLeft size={18} />
+              </button>
+              <div className="document-pages">{currentPage} / {pageCount}</div>
+              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
+                <ChevronRight size={18} />
+              </button>
+            </aside>
+          </div>
 
             <div className="toolbar-actions">
               <button className="toolbar-button" onClick={() => setShowUploadOverlay(true)}>
@@ -170,74 +203,28 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         {/* ── MAIN ── */}
         <div className="editor-main">
 
-          {/* Tool sidebars */}
-          <div className="editor-sidebar">
-            <aside className="editor-sidebar-main">
-              <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}>
-                <MousePointerClick size={18} />
-              </button>
-              <button className={`sidebar-button ${isTextMode ? 'active' : ''}`} onClick={handleTextModeToggle}>
-                <Type size={18} />
-              </button>
-              <button className="sidebar-button"><Signature size={18} /></button>
-              <button className="sidebar-button"><PenTool size={18} /></button>
-              <button className="sidebar-button"><X size={18} /></button>
-              <button className="sidebar-button"><Check size={18} /></button>
-            </aside>
-
-            <aside className="editor-sidebar-main">
-              <button
-                className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}
-                type="button"
-                onClick={() => handleToggleBold(currentPage)}
-                disabled={!selectedTextId}
-              >
-                <Bold size={18} />
-              </button>
-              <button className={`sidebar-button ${selectedText?.underline ? 'active' : ''}`}
-                type="button"
-                onClick={() => handleToggleUnderline(currentPage)}
-                disabled={!selectedTextId}>
-                <Underline size={18} />
-                </button>
-              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2, currentPage)} disabled={!selectedTextId}>
-                <AArrowDown size={18} />
-              </button>
-              <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2, currentPage)} disabled={!selectedTextId}>
-                <AArrowUp size={18} />
-              </button>
-              <button className="sidebar-button" type="button" onClick={() => handleDeleteSelectedText(currentPage)} disabled={!selectedTextId}>
-                <Trash size={18} />
-              </button>
-              <button className="page-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
-                <Undo size={18} />
-              </button>
-              <button className="page-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
-                <Redo size={18} />
-              </button>
-            </aside>
-          </div>
-
-          {/* Page counter */}
-          <div className="editor-page-count">
-            <aside className="editor-sidebar-page">
-              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
-                <ChevronLeft size={18} />
-              </button>
-              <div className="document-pages">{currentPage} / {pageCount}</div>
-              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
-                <ChevronRight size={18} />
-              </button>
-            </aside>
-          </div>
-
           {/* Document canvas */}
           <section className="document-panel">
+            <div className="editor-sidebar">
+              <aside className="editor-sidebar-main">
+                <button className={`sidebar-button ${isSelectionMode ? 'active' : ''}`} onClick={handleSelectionModeToggle}>
+                  <MousePointerClick size={18} />
+                </button>
+                <button className={`sidebar-button ${isTextMode ? 'active' : ''}`} onClick={handleTextModeToggle}>
+                  <Type size={18} />
+                </button>
+                <button className="sidebar-button"><Signature size={18} /></button>
+                <button className="sidebar-button"><PenTool size={18} /></button>
+                <button className="sidebar-button"><X size={18} /></button>
+                <button className="sidebar-button"><Check size={18} /></button>
+              </aside>
+            </div>
+
             <div className="document-preview">
               <div
                 className={`document-sheet ${isTextMode ? 'text-mode-enabled' : ''}`}
                 ref={documentSheetRef}
-                onClick={handleDocumentClick}
+                onClick={handleSheetClick}
                 onMouseMove={handleMouseMove}
                 onMouseUp={() => setDraggingId(null)}
                 onMouseLeave={() => setDraggingId(null)}
@@ -245,7 +232,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                   cursor: isTextMode
                     ? 'text'
                     : isSelectionMode && currentTexts.length > 0
-                    ? 'grab'
+                    ? 'default'
                     : 'default',
                 }}
               >
@@ -256,7 +243,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 ) : pageImage ? (
                   <>
                     <img src={pageImage} alt={`Page ${currentPage}`} className="pdf-image" />
-                    {(isTextMode || isSelectionMode) && currentTexts.length > 0 && (
+                    {currentTexts.length > 0 && (
                       <div className="text-elements-container">
                         {currentTexts.map((el) => (
                           <div
@@ -268,19 +255,28 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               top: `${el.y * displayScale}px`,
                               fontSize: `${el.fontSize * displayScale}px`,
                               fontWeight: el.bold ? 'bold' : 'normal',
-                              cursor: isSelectionMode && editingId !== el.id ? 'grab' : 'text',
                               textDecoration: el.underline ? 'underline' : 'none',
+                              cursor: editingId === el.id ? 'text' : 'grab',
                             }}
                             onMouseDown={(e) => {
-                              if (isSelectionMode && editingId !== el.id) handleTextMouseDown(e, el.id)
+                              // Only drag if not currently being edited
+                              if (isSelectionMode && editingId !== el.id) {
+                                handleTextMouseDown(e, el.id)
+                              }
                             }}
                             onClick={(e) => {
                               e.stopPropagation()
+                              // Single click = select only
                               handleSelectText(el.id, currentPage)
+                            }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation()
+                              // Double click = enter edit mode
+                              handleEditText(el.id, currentPage)
                               setTimeout(() => editInputRef.current?.focus(), 0)
                             }}
                           >
-                            {el.text || (isTextMode && editingId !== el.id ? 'Click to edit' : '')}
+                            {el.text || (editingId === el.id ? '' : '+')}
                           </div>
                         ))}
                         {editingId && (
@@ -294,7 +290,6 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             style={{
                               left: `${currentTexts.find((el) => el.id === editingId)?.x! * displayScale}px`,
                               top: `${currentTexts.find((el) => el.id === editingId)?.y! * displayScale}px`,
-
                               fontWeight: currentTexts.find((el) => el.id === editingId)?.bold ? 'bold' : 'normal',
                               textDecoration: currentTexts.find((el) => el.id === editingId)?.underline ? 'underline' : 'none',
                               fontSize: `${currentTexts.find((el) => el.id === editingId)?.fontSize! * displayScale}px`,
@@ -309,6 +304,42 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 )}
                 <div className="doc-page-label">Page {currentPage}</div>
               </div>
+            </div>
+
+            <div className="editor-sidebar">
+              <aside className="editor-sidebar-main">
+                <button
+                  className={`sidebar-button ${selectedText?.bold ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => handleToggleBold(currentPage)}
+                  disabled={!selectedTextId}
+                >
+                  <Bold size={18} />
+                </button>
+                <button
+                  className={`sidebar-button ${selectedText?.underline ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => handleToggleUnderline(currentPage)}
+                  disabled={!selectedTextId}
+                >
+                  <Underline size={18} />
+                </button>
+                <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(-2, currentPage)} disabled={!selectedTextId}>
+                  <AArrowDown size={18} />
+                </button>
+                <button className="sidebar-button" type="button" onClick={() => handleFontSizeChange(2, currentPage)} disabled={!selectedTextId}>
+                  <AArrowUp size={18} />
+                </button>
+                <button className="sidebar-button" type="button" onClick={() => handleDeleteSelectedText(currentPage)} disabled={!selectedTextId}>
+                  <Trash size={18} />
+                </button>
+                <button className="page-button" type="button" onClick={handleUndo} disabled={historyStack.length === 0}>
+                  <Undo size={18} />
+                </button>
+                <button className="page-button" type="button" onClick={handleRedo} disabled={redoStack.length === 0}>
+                  <Redo size={18} />
+                </button>
+              </aside>
             </div>
           </section>
 
