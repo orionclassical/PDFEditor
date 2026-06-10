@@ -87,7 +87,12 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     if (target.closest(".text-elements-container")) return
 
     if (isTextMode) {
-      // In text mode: clicking empty area creates a new text element
+      // If something is selected or being edited, first click outside just deselects
+      if (selectedTextId || editingId) {
+        handleDeselect()
+        return
+      }
+      // Nothing selected — create a new text element at click position
       if (!documentSheetRef.current) return
       const rect = documentSheetRef.current.getBoundingClientRect()
       const x = (e.clientX - rect.left) / displayScale
@@ -272,7 +277,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               setTimeout(() => editInputRef.current?.focus(), 0)
                             }}
                           >
-                            {el.text || (editingId === el.id ? '' : 'Click to Edit')}
+                            {el.text || (editingId === el.id ? '' : 'New Text')}
                           </div>
                         ))}
                         {editingId && (
