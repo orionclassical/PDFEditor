@@ -77,9 +77,7 @@ function Home() {
           onChange={onFileChange}
         />
 
-        {selectedFile ? (
-          <p className="file-label">Selected file: {selectedFile.name}</p>
-        ) : (
+        {(
           <p className="file-label file-label--hint">Click above to choose a PDF file</p>
         )}
       </main>
