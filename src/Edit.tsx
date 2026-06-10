@@ -159,12 +159,21 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                   <p className="meta-label">Loaded file</p>
                   <p className="meta-value">{file.name}</p>
                 </div>
-                <div>
-                  <p className="meta-label">Pages</p>
-                  <p className="meta-value">{pageCount || '-'}</p>
-                </div>
               </div>
             </div>
+
+            {/* Page counter */}
+          <div className="editor-page-count">
+            <aside className="editor-sidebar-page">
+              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
+                <ChevronLeft size={18} />
+              </button>
+              <div className="document-pages">{currentPage} / {pageCount}</div>
+              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
+                <ChevronRight size={18} />
+              </button>
+            </aside>
+          </div>
 
             <div className="toolbar-actions">
               <button className="toolbar-button" onClick={() => setShowUploadOverlay(true)}>
@@ -193,19 +202,6 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
 
         {/* ── MAIN ── */}
         <div className="editor-main">
-
-          {/* Page counter */}
-          <div className="editor-page-count">
-            <aside className="editor-sidebar-page">
-              <button className="page-button" type="button" onClick={gotoPrevious} disabled={currentPage === 1}>
-                <ChevronLeft size={18} />
-              </button>
-              <div className="document-pages">{currentPage} / {pageCount}</div>
-              <button className="page-button" type="button" onClick={gotoNext} disabled={currentPage === pageCount}>
-                <ChevronRight size={18} />
-              </button>
-            </aside>
-          </div>
 
           {/* Document canvas */}
           <section className="document-panel">

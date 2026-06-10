@@ -38,7 +38,7 @@ export const renderTextOverlayOnCanvas = (
     context.font = `${weight}${textItem.fontSize}px Arial`
     const lines = textItem.text.split('\n')
     lines.forEach((line, index) => {
-      context.fillText(line, textItem.x + 5, textItem.y + 5)
+      context.fillText(line, textItem.x + 5, textItem.y + 4) // This is where the position of text when exported
     })
 
     // Draw underline manually since canvas has no text-decoration
