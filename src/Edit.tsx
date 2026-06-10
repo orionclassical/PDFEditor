@@ -79,6 +79,9 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     clearSelection()
   }
 
+  // Read scale live from DOM — never stale, used for all coordinate math
+  const getLiveScale = (): number => getCurrentPageDisplayScale(documentSheetRef)
+
   // — Document sheet click (background) — deselect
   const handleSheetClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement
@@ -95,8 +98,8 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
       // Nothing selected — create a new text element at click position
       if (!documentSheetRef.current) return
       const rect = documentSheetRef.current.getBoundingClientRect()
-      const x = (e.clientX - rect.left) / displayScale
-      const y = (e.clientY - rect.top) / displayScale
+      const x = (e.clientX - rect.left) / getLiveScale()
+      const y = (e.clientY - rect.top) / getLiveScale()
       const texts = getCurrentPageTexts(currentPage)
       const newId = Date.now().toString()
       setCurrentPageTexts(currentPage, [...texts, { id: newId, x, y, text: '', fontSize: 14, bold: false, underline: false }])
@@ -119,16 +122,16 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     setDraggingId(elementId)
     handleSelectText(elementId, currentPage)
     setDragOffset({
-      x: e.clientX - rect.left - element.x * displayScale,
-      y: e.clientY - rect.top - element.y * displayScale,
+      x: e.clientX - rect.left - element.x * getLiveScale(),
+      y: e.clientY - rect.top - element.y * getLiveScale(),
     })
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!draggingId || !documentSheetRef.current) return
     const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left - dragOffset.x) / displayScale
-    const y = (e.clientY - rect.top - dragOffset.y) / displayScale
+    const x = (e.clientX - rect.left - dragOffset.x) / getLiveScale()
+    const y = (e.clientY - rect.top - dragOffset.y) / getLiveScale()
     setCurrentPageTexts(
       currentPage,
       getCurrentPageTexts(currentPage).map((el) =>
@@ -277,7 +280,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               setTimeout(() => editInputRef.current?.focus(), 0)
                             }}
                           >
-                            {el.text || (editingId === el.id ? '' : 'New Text')}
+                            {el.text || (editingId === el.id ? '' : '+')}
                           </div>
                         ))}
                         {editingId && (
