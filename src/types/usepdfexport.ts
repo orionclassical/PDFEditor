@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { degrees, PDFDocument, StandardFonts } from 'pdf-lib'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import type { PageSize, PageTextsMap } from './types'
 import { getPageSizeDimensions } from './pdfutils'
 
 export function usePdfExport(
   file: File,
-  pdfDocRef: React.MutableRefObject<any>,
+  pdfDocRef: React.MutableRefObject<PDFDocumentProxy | null>,
   pageCount: number,
   pageTexts: PageTextsMap,
   selectedPageSize: PageSize

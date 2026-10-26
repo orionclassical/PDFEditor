@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import {
   ChevronLeft, ChevronRight, ArrowLeft,
   MousePointerClick, AArrowUp, AArrowDown,
   Undo, Redo, Trash, Type, Bold, Underline,
-  Signature, PenTool, X, Check,
 } from 'lucide-react'
 
 import type { PageSize } from './types/types'
@@ -31,6 +30,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const documentSheetRef = useRef<HTMLDivElement>(null)
   const pdfImageRef = useRef<HTMLImageElement>(null)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
+  const nextTextIdRef = useRef(0)
 
   const {
     currentPage, pageCount, pageImage, pageSizes, loadingPage,
@@ -60,10 +60,10 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     const ro = new ResizeObserver(update)
     ro.observe(sheet)
     return () => ro.disconnect()
-  }, [pageImage, pageSizes, currentPage])
+  }, [pageImage, pageSizes, currentPage, getCurrentPageDisplayScale])
 
   // Clear selection on page change
-  useEffect(() => { clearSelection() }, [currentPage])
+  useEffect(() => { clearSelection() }, [currentPage, clearSelection])
 
   // — Mode toggles —
   const handleTextModeToggle = () => {
@@ -117,7 +117,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         e.clientY < rect.top || e.clientY > rect.bottom
       ) return
       const texts = getCurrentPageTexts(currentPage)
-      const newId = Date.now().toString()
+      const newId = `text-${nextTextIdRef.current++}`
       setCurrentPageTexts(currentPage, [...texts, {
         id: newId,
         x: position.x,
@@ -144,7 +144,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     const element = getCurrentPageTexts(currentPage).find((el) => el.id === elementId)
     if (!element) return
     setDraggingId(elementId)
-    handleSelectText(elementId, currentPage)
+    handleSelectText(elementId)
     setDragOffset({
       x: e.clientX - position.rect.left - element.x * getLiveScale(),
       y: e.clientY - position.rect.top - element.y * getLiveScale(),
@@ -301,7 +301,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             onClick={(e) => {
                               e.stopPropagation()
                               // Single click = select only
-                              handleSelectText(el.id, currentPage)
+                              handleSelectText(el.id)
                             }}
                             onDoubleClick={(e) => {
                               e.stopPropagation()
@@ -322,11 +322,11 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                             onBlur={() => handleTextBlur(currentPage)}
                             onKeyDown={(e) => { if (e.key === 'Escape') handleTextBlur(currentPage) }}
                             style={{
-                              left: `${currentTexts.find((el) => el.id === editingId)?.x! * displayScale}px`,
-                              top: `${currentTexts.find((el) => el.id === editingId)?.y! * displayScale}px`,
-                              fontWeight: currentTexts.find((el) => el.id === editingId)?.bold ? 'bold' : 'normal',
-                              textDecoration: currentTexts.find((el) => el.id === editingId)?.underline ? 'underline' : 'none',
-                              fontSize: `${currentTexts.find((el) => el.id === editingId)?.fontSize! * displayScale}px`,
+                              left: `${(editingElement?.x ?? 0) * displayScale}px`,
+                              top: `${(editingElement?.y ?? 0) * displayScale}px`,
+                              fontWeight: editingElement?.bold ? 'bold' : 'normal',
+                              textDecoration: editingElement?.underline ? 'underline' : 'none',
+                              fontSize: `${(editingElement?.fontSize ?? 14) * displayScale}px`,
                               lineHeight: `${(editingElement?.fontSize ?? 14) * displayScale * 0.85}px`,
                             }}
                           />

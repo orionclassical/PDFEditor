@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { TextElement, PageTextsMap } from './types'
 
 export function useTextElements() {
@@ -26,7 +26,7 @@ export function useTextElements() {
   }
 
   // Single click — select only, no editing
-  const handleSelectText = (id: string, currentPage: number) => {
+  const handleSelectText = (id: string) => {
     setSelectedTextId(id)
     // Do NOT set editingId here — editing requires double click
   }
@@ -125,11 +125,11 @@ export function useTextElements() {
     setEditingText('')
   }
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectedTextId(null)
     setEditingId(null)
     setEditingText('')
-  }
+  }, [])
 
   return {
     pageTexts,
