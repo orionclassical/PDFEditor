@@ -29,6 +29,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   const [displayScale, setDisplayScale] = useState(1)
 
   const documentSheetRef = useRef<HTMLDivElement>(null)
+  const pdfImageRef = useRef<HTMLImageElement>(null)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
   const {
@@ -47,14 +48,14 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   } = useTextElements()
 
   const { exporting, handleDone } = usePdfExport(
-    pdfDocRef, pageCount, pageTexts, selectedPageSize
+    file, pdfDocRef, pageCount, pageTexts, selectedPageSize
   )
 
   // Recompute displayScale when page image loads or container resizes
   useEffect(() => {
     const sheet = documentSheetRef.current
     if (!sheet) return
-    const update = () => setDisplayScale(getCurrentPageDisplayScale(documentSheetRef))
+    const update = () => setDisplayScale(getCurrentPageDisplayScale(pdfImageRef))
     update()
     const ro = new ResizeObserver(update)
     ro.observe(sheet)
@@ -80,7 +81,19 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
   }
 
   // Read scale live from DOM — never stale, used for all coordinate math
-  const getLiveScale = (): number => getCurrentPageDisplayScale(documentSheetRef)
+  const getLiveScale = (): number => getCurrentPageDisplayScale(pdfImageRef)
+
+  const getPagePosition = (clientX: number, clientY: number) => {
+    const image = pdfImageRef.current
+    const pageSize = pageSizes[currentPage]
+    if (!image || !pageSize) return null
+    const rect = image.getBoundingClientRect()
+    return {
+      x: ((clientX - rect.left) / rect.width) * pageSize.width,
+      y: ((clientY - rect.top) / rect.height) * pageSize.height,
+      rect,
+    }
+  }
 
   // — Document sheet click (background) — deselect
   const handleSheetClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -96,13 +109,24 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
         return
       }
       // Nothing selected — create a new text element at click position
-      if (!documentSheetRef.current) return
-      const rect = documentSheetRef.current.getBoundingClientRect()
-      const x = (e.clientX - rect.left) / getLiveScale()
-      const y = (e.clientY - rect.top) / getLiveScale()
+      const position = getPagePosition(e.clientX, e.clientY)
+      if (!position) return
+      const { rect } = position
+      if (
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom
+      ) return
       const texts = getCurrentPageTexts(currentPage)
       const newId = Date.now().toString()
-      setCurrentPageTexts(currentPage, [...texts, { id: newId, x, y, text: '', fontSize: 14, bold: false, underline: false }])
+      setCurrentPageTexts(currentPage, [...texts, {
+        id: newId,
+        x: position.x,
+        y: position.y,
+        text: '',
+        fontSize: 14,
+        bold: false,
+        underline: false,
+      }])
       handleEditText(newId, currentPage)
       setTimeout(() => editInputRef.current?.focus(), 0)
     } else {
@@ -115,33 +139,35 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
     if (!isSelectionMode) return
     e.preventDefault()
     e.stopPropagation()
-    const rect = documentSheetRef.current?.getBoundingClientRect()
-    if (!rect) return
+    const position = getPagePosition(e.clientX, e.clientY)
+    if (!position) return
     const element = getCurrentPageTexts(currentPage).find((el) => el.id === elementId)
     if (!element) return
     setDraggingId(elementId)
     handleSelectText(elementId, currentPage)
     setDragOffset({
-      x: e.clientX - rect.left - element.x * getLiveScale(),
-      y: e.clientY - rect.top - element.y * getLiveScale(),
+      x: e.clientX - position.rect.left - element.x * getLiveScale(),
+      y: e.clientY - position.rect.top - element.y * getLiveScale(),
     })
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!draggingId || !documentSheetRef.current) return
-    const rect = documentSheetRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left - dragOffset.x) / getLiveScale()
-    const y = (e.clientY - rect.top - dragOffset.y) / getLiveScale()
+    if (!draggingId) return
+    const position = getPagePosition(e.clientX - dragOffset.x, e.clientY - dragOffset.y)
+    if (!position) return
     setCurrentPageTexts(
       currentPage,
       getCurrentPageTexts(currentPage).map((el) =>
-        el.id === draggingId ? { ...el, x: Math.max(0, x), y: Math.max(0, y) } : el
+        el.id === draggingId
+          ? { ...el, x: Math.max(0, position.x), y: Math.max(0, position.y) }
+          : el
       )
     )
   }
 
   const currentTexts = getCurrentPageTexts(currentPage)
   const selectedText = currentTexts.find((el) => el.id === selectedTextId)
+  const editingElement = currentTexts.find((el) => el.id === editingId)
 
   return (
     <div className="editor-page">
@@ -213,10 +239,18 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                 <button className={`sidebar-button ${isTextMode ? 'active' : ''}`} onClick={handleTextModeToggle}>
                   <Type size={18} />
                 </button>
-                <button className="sidebar-button"><Signature size={18} /></button>
-                <button className="sidebar-button"><PenTool size={18} /></button>
-                <button className="sidebar-button"><X size={18} /></button>
-                <button className="sidebar-button"><Check size={18} /></button>
+                {/* <button className="sidebar-button">
+                  <Signature size={18}/>
+                </button>
+                <button className="sidebar-button">
+                  <PenTool size={18} />
+                  </button>
+                <button className="sidebar-button">
+                  <X size={18} />
+                </button>
+                <button className="sidebar-button">
+                  <Check size={18} />
+                </button> */}
               </aside>
             </div>
 
@@ -241,8 +275,8 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                     <div className="pdf-spinner" />
                   </div>
                 ) : pageImage ? (
-                  <>
-                    <img src={pageImage} alt={`Page ${currentPage}`} className="pdf-image" />
+                  <div className="pdf-page-layer">
+                    <img ref={pdfImageRef} src={pageImage} alt={`Page ${currentPage}`} className="pdf-image" />
                     {currentTexts.length > 0 && (
                       <div className="text-elements-container">
                         {currentTexts.map((el) => (
@@ -276,7 +310,7 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               setTimeout(() => editInputRef.current?.focus(), 0)
                             }}
                           >
-                            {el.text || (editingId === el.id ? '' : '+')}
+                            {el.text || (editingId === el.id ? '' : 'New Text')}
                           </div>
                         ))}
                         {editingId && (
@@ -293,16 +327,16 @@ function EditPage({ file, onBack }: { file: File; onBack: () => void }) {
                               fontWeight: currentTexts.find((el) => el.id === editingId)?.bold ? 'bold' : 'normal',
                               textDecoration: currentTexts.find((el) => el.id === editingId)?.underline ? 'underline' : 'none',
                               fontSize: `${currentTexts.find((el) => el.id === editingId)?.fontSize! * displayScale}px`,
+                              lineHeight: `${(editingElement?.fontSize ?? 14) * displayScale * 0.85}px`,
                             }}
                           />
                         )}
                       </div>
                     )}
-                  </>
+                  </div>
                 ) : (
                   <div className="pdf-placeholder">PDF preview unavailable</div>
                 )}
-                <div className="doc-page-label">Page {currentPage}</div>
               </div>
             </div>
 

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf'
-import { getScaleForPageCount } from './pdfutils'
 
 export function usePdfRenderer(file: File) {
   const [currentPage, setCurrentPage] = useState(1)
@@ -51,6 +50,7 @@ export function usePdfRenderer(file: File) {
     if (!pdfDocRef.current || !pageCount) return
 
     let cancelled = false
+    let renderTask: { cancel: () => void; promise: Promise<void> } | null = null
     setLoadingPage(true)
     setPageImage(null)
 
@@ -60,19 +60,23 @@ export function usePdfRenderer(file: File) {
       .getPage(currentPage)
       .then((page: any) => {
         if (cancelled) return
-        const scale = getScaleForPageCount(pageCount)
+        const pageViewport = page.getViewport({ scale: 1 })
+        const previewWidth = Math.min(780, window.innerWidth * 0.8)
+        const scale = Math.max(1, (previewWidth / pageViewport.width) * (window.devicePixelRatio || 1))
         const viewport = page.getViewport({ scale })
         const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        canvas.width = viewport.width
-        canvas.height = viewport.height
+        canvas.width = Math.ceil(viewport.width)
+        canvas.height = Math.ceil(viewport.height)
         renderedCanvas = canvas
+        const context = canvas.getContext('2d')
         if (!context) throw new Error('Unable to get canvas rendering context')
         setPageSizes((prev) => ({
           ...prev,
-          [currentPage]: { width: viewport.width, height: viewport.height },
+          [currentPage]: { width: pageViewport.width, height: pageViewport.height },
         }))
-        return page.render({ canvasContext: context, viewport }).promise
+        const task = page.render({ canvasContext: context, viewport })
+        renderTask = task
+        return task.promise
       })
       .then(() => {
         if (cancelled) return
@@ -80,23 +84,26 @@ export function usePdfRenderer(file: File) {
         setPageImage(renderedCanvas.toDataURL('image/png'))
       })
       .catch((error: unknown) => {
-        console.error('PDF page render failed:', error)
+        if (!cancelled) console.error('PDF page render failed:', error)
       })
       .finally(() => {
         if (!cancelled) setLoadingPage(false)
       })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      renderTask?.cancel()
+    }
   }, [pageCount, currentPage])
 
   const gotoPrevious = () => setCurrentPage((p) => Math.max(1, p - 1))
   const gotoNext = () => setCurrentPage((p) => Math.min(pageCount, p + 1))
 
-  const getCurrentPageDisplayScale = (documentSheetRef: React.RefObject<HTMLDivElement | null>): number => {
+  const getCurrentPageDisplayScale = (pageRef: React.RefObject<HTMLElement | null>): number => {
     const pageSize = pageSizes[currentPage]
-    const sheet = documentSheetRef.current
-    if (!pageSize || !sheet) return 1
-    const rect = sheet.getBoundingClientRect()
+    const page = pageRef.current
+    if (!pageSize || !page) return 1
+    const rect = page.getBoundingClientRect()
     return rect.width > 0 ? rect.width / pageSize.width : 1
   }
 

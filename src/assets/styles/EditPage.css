@@ -269,6 +269,12 @@
   z-index: 1; 
 }
 
+.pdf-page-layer {
+  position: relative;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
 .pdf-image {
   width: 100%;
   height: auto;
@@ -299,14 +305,6 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.doc-page-label {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 0.95rem;
 }
 
 .back-home {
@@ -515,45 +513,50 @@
 .text-element {
   position: absolute;
   pointer-events: all;
+  text-align: left;
   color: #000000;
   font-family: Arial, sans-serif;
-  line-height: 1.2;
+  line-height: 0.85;
   white-space: pre-wrap;
-  padding: 2px 4px;
+  padding: 0;
   border-radius: 3px;
-  border: 1px solid transparent;
-  transition: border-color 0.15s;
+  outline: 1px solid transparent;
+  transition: outline-color 0.15s;
   user-select: none;
 }
 
 .text-element:hover {
-  border-color: rgba(228, 84, 84, 0.4);
+  outline-color: rgba(228, 84, 84, 0.4);
 }
 
 .text-element.selected {
-  border-color: #e45454;
+  outline-color: #e45454;
   background: rgba(228, 84, 84, 0.06);
 }
 
 .text-element.editing {
-  border-color: transparent;
+  outline-color: transparent;
   pointer-events: none;
 }
 
 .text-input {
   position: absolute;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1.5px solid #e45454;
+  box-sizing: border-box;
+  text-align: left;
+  width: 30em;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border: 0;
+  outline: 1.5px solid #e45454;
   border-radius: 3px;
   color: #000000;
   font-family: Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.2;
-  padding: 2px 4px;
+  line-height: 0.85;
+  padding: 0;
   resize: none;
   min-width: 120px;
   min-height: 28px;
-  outline: none;
   z-index: 20;
   pointer-events: all;
 }
