@@ -66,6 +66,7 @@ function Home() {
       <main className="hero-panel">
         <h1>PDF EDITOR</h1>
 
+        
         <button className="upload-card" type="button" onClick={onUploadClick}>
           <span>UPLOAD PDF FILE</span>
         </button>
@@ -79,14 +80,14 @@ function Home() {
         />
 
         {(
-          <p className="file-label file-label--hint">Click above to choose a PDF file</p>
+          <p className="file-label file-label--hint">Click above to choose a PDF file or drag it</p>
         )}
       </main>
 
       <div className="dev">
         <p>
           <a href="https://github.com/orionclassical" className="link" target="_blank" rel="noopener noreferrer">
-            <FaGithub style={{ marginRight: "8px" }} />
+            <FaGithub style={{ marginRight: "5px", height: "5%" }} />
             github/orionclassical
           </a>
         </p>
